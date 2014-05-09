@@ -1,0 +1,103 @@
+/*
+ * Copyright (C) 2013, Ragnar Hagg
+ * All rights reserved.
+ *
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted provided that the following conditions
+ * are met:
+ *
+ *     * Redistributions of source code must retain the above copyright
+ *       notice, this list of conditions and the following disclaimer.
+ *     * Redistributions in binary form must reproduce the above
+ *       copyright notice, this list of conditions and the following
+ *       disclaimer in the documentation and/or other materials provided
+ *       with the distribution.
+ *
+ *
+ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
+ * "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
+ * LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS
+ * FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE
+ * COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT,
+ * INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
+ * (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
+ * SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION)
+ * HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT,
+ * STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+ * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED
+ * OF THE POSSIBILITY OF SUCH DAMAGE.
+ */
+
+
+/* Info about each performance counter */
+message PerfCtrInfo
+{
+    optional int32 id = 1;
+    /* Name in pfm4 library */
+    optional string name = 2;
+    optional uint64 config = 3;
+    optional uint64 config1 = 4;
+    optional uint64 config2 = 5;
+    optional uint32 type = 6;
+}
+
+message PerfCtrSample
+{
+    /* Target cache size for which the sample was taken */
+    optional uint32 size = 1;
+    /* Value for each counter in same sample */
+    repeated uint64 ctr = 2 [packed=true];
+}
+
+message PerfCtrDump
+{
+    /* Samples for target */
+    optional PerfCtrSample t_sample = 1;
+    /* Samples for each pirates-thread */
+    repeated PerfCtrSample p_sample = 2;
+}
+
+message PerfHeader
+{
+    message TargetSetup
+    {
+        /* CPU that the target ran on */
+        optional uint32 cpu = 1;
+        /* Number of instructions er sample */
+        optional uint64 sample_period = 3;
+        /* Number of counters on the target */
+        optional uint32 n_ctrs = 4;
+        /* Target run command */
+        optional string command = 5;
+        /* List of used counter on target */
+        repeated PerfCtrInfo ctr = 6;
+    }
+
+    message PirateSetup
+    {
+        /* Number of ways in the LLC */
+        optional uint32 ways = 1;
+        optional uint32 cache_size = 2;
+        /* Cache-line size for LLC */
+        optional uint32 stride = 3;
+        optional uint32 way_size = 4;
+        /* Pirate steal same size whole simulation */
+        optional bool no_sweep = 5;
+        /* Number of Pirate threads used */
+        optional uint32 n_pirates = 6;
+        /* Number of counters on each Pirate thread */
+        optional uint32 n_ctrs = 7;
+        /* List of used counter on Pirate threads */
+        repeated PerfCtrInfo ctr = 8;
+        /* List of CPUs for Pirate threads */
+        repeated uint32 cpu = 9 [packed=true];
+    }
+
+    /* Target header */
+    optional TargetSetup t_setup = 1;
+    /* Pirate header */
+    optional PirateSetup p_setup = 2;
+    optional bool no_reference = 3;
+    /* Sample for reference run of Pirate */
+    optional PerfCtrSample reference = 4;
+}
